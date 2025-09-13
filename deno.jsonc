@@ -3,4 +3,12 @@
   "version": "0.0.1",
   "exports": "./mod.ts",
   "license": "MIT",
+  "imports": {
+    "@axhxrx/assert-never": "jsr:@axhxrx/assert-never@^0.2.1",
+    "@std/cli": "jsr:@std/cli@^1.0.22",
+    "@std/dotenv": "jsr:@std/dotenv@^0.225.5",
+    "@std/fs": "jsr:@std/fs@^1.0.19",
+    "@std/path": "jsr:@std/path@^1.1.2"
+  },
+
 }
