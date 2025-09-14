@@ -119,10 +119,9 @@ export class UserInputQueue
         }
         case 'confirm':
         {
-          const value = valueStr.toLowerCase() === 'yes'
-            || valueStr.toLowerCase() === 'y'
-            || valueStr.toLowerCase() === 'true';
-          actions.push({ type: UserInputType.Confirm, value });
+          // Pass the string value through - let the operation handle parsing
+          // This allows for "yes", "no", "more_info", etc.
+          actions.push({ type: UserInputType.Confirm, value: valueStr });
           break;
         }
         case 'checkbox':

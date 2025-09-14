@@ -1,11 +1,10 @@
-import { assertNever } from '@axhxrx/assert-never';
-import { promptSelect } from '../../runtime/prompt.ts';
 import { MenuOperation } from '../base/MenuOperation.ts';
 import type { OperationResult } from '../base/types.ts';
 import { BenchOperation } from './BenchOperation.ts';
 import { CompareOperation } from './CompareOperation.ts';
 import { DisplayFatalErrorAndExit } from './DisplayFatalErrorAndExit.ts';
 import { ExitNormally } from './ExitNormally.ts';
+import { SelectOperation } from './primitives/SelectOperation.ts';
 
 // NOTE: We will want to rework menus to be more self-checking. Maybe a Menu and MenuItem class/type and a handler function type to not make the types require all this shitty boiler plate.
 // I tried making a menu on object, but I realized that there is a need to sometimes know the chosen item, and then some other stufff, before constructing the result operation. But we could handle that by standarding the context passed back to the function maybe, instead of making the menu definition an array of titles, and then a handler function that is exhaustive (and causes more type fuckery and workarounds), Maybe we design this soon but not yet, for now this works:
@@ -55,16 +54,19 @@ export class MainMenuOperation extends MenuOperation<MainMenuOperationResult>
 
   protected async performOperation(): Promise<OperationResult<MainMenuOperationResult>>
   {
-    await Promise.resolve();
+    // Use SelectOperation primitive instead of direct prompt
+    const selectOp = new SelectOperation('MAIN MENU', menu, false);
+    const selectResult = await selectOp.execute();
 
-    const chosen = promptSelect(
-      'MAIN MENU',
-      [...menu], // sucks but promptSelect can't accept a readonly array T_T
-    );
-
-    if (!isValidMenuItem(chosen))
+    if (!selectResult.success)
     {
-      return { success: false, error: 'shit' };
+      return { success: false, error: selectResult.error || 'Menu selection failed' };
+    }
+
+    const chosen = selectResult.data;
+    if (!chosen || !isValidMenuItem(chosen))
+    {
+      return { success: false, error: 'Invalid menu selection' };
     }
 
     const result = handleMenuSelection(chosen);
