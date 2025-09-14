@@ -1,20 +1,26 @@
-import { Logger, type LoggerSuspensionMetadata } from "../../logger/logger.ts";
-import type { Operation, OperationResult } from "./types.ts";
+import { Logger, type LoggerSuspensionMetadata } from '../../logger/logger.ts';
+import type { Operation, OperationResult } from './types.ts';
 
-class OperationIdGenerator {
+class OperationIdGenerator
+{
   private static _operationNumber = 0;
 
-  static next(): number {
+  static next(): number
+  {
     return ++this._operationNumber;
   }
 }
 
 export function formatOperationResultForLogging(
   result: OperationResult<unknown>,
-): string {
-  if (result.success) {
+): string
+{
+  if (result.success)
+  {
     return `✅ { success: true, data: ${result.data} }`;
-  } else {
+  }
+  else
+  {
     return `❌ { success: false, error: ${result.error}, details: ${result.details} }`;
   }
 }
@@ -32,17 +38,20 @@ export function formatOperationResultForLogging(
  - Top-level operations (no parent) create their own logger
  - Override shouldUseParentLogger() to force own logger creation
  */
-export abstract class BaseOperation<T> implements Operation<T> {
+export abstract class BaseOperation<T> implements Operation<T>
+{
   // Global operation stack for tracking hierarchy
   private static operationStack: BaseOperation<unknown>[] = [];
 
   // Public getter for the current operation stack
-  static get currentStack(): ReadonlyArray<BaseOperation<unknown>> {
+  static get currentStack(): ReadonlyArray<BaseOperation<unknown>>
+  {
     return [...this.operationStack];
   }
 
   // Get the immediate parent operation (if any)
-  static get parent(): BaseOperation<unknown> | null {
+  static get parent(): BaseOperation<unknown> | null
+  {
     return this.operationStack.length > 1
       ? this.operationStack[this.operationStack.length - 2]
       : null;
@@ -52,7 +61,8 @@ export abstract class BaseOperation<T> implements Operation<T> {
   static async execute<ResultT, ThisT extends typeof BaseOperation<ResultT>>(
     this: ThisT,
     ...args: ConstructorParameters<ThisT>
-  ): Promise<OperationResult<ResultT>> {
+  ): Promise<OperationResult<ResultT>>
+  {
     // deno-lint-ignore no-explicit-any
     const op = new (this as unknown as any)(...args);
     const result = await op.execute();
@@ -61,7 +71,8 @@ export abstract class BaseOperation<T> implements Operation<T> {
 
   private _operationId: number = OperationIdGenerator.next();
 
-  get operationId(): number {
+  get operationId(): number
+  {
     return this._operationId;
   }
 
@@ -70,19 +81,23 @@ export abstract class BaseOperation<T> implements Operation<T> {
   private _parentLoggerSuspended: boolean = false;
   private _suspensionMetadata: LoggerSuspensionMetadata | null = null;
 
-  protected get logger(): Logger {
+  protected get logger(): Logger
+  {
     // If we already have a logger, return it
-    if (this._logger) {
+    if (this._logger)
+    {
       return this._logger;
     }
 
     // Check if we should use parent's logger
     const parent = BaseOperation.parent;
-    if (parent && this.shouldUseParentLogger()) {
+    if (parent && this.shouldUseParentLogger())
+    {
       this._usingParentLogger = true;
       // Create a temporary logger to avoid recursion
       // The parent will get its logger independently
-      if (!parent._logger) {
+      if (!parent._logger)
+      {
         // Parent doesn't have a logger yet, create our own
         this._logger = new Logger(this.name);
         this._usingParentLogger = false;
@@ -105,23 +120,27 @@ export abstract class BaseOperation<T> implements Operation<T> {
 
    Operations that need their own log file should override this to return false.
    */
-  protected shouldUseParentLogger(): boolean {
+  protected shouldUseParentLogger(): boolean
+  {
     // Default: use parent's logger if we have a parent
     return BaseOperation.parent !== null;
   }
 
-  constructor(public readonly name: string) {
+  constructor(public readonly name: string)
+  {
     // Logger is now created lazily on first use
   }
 
   /**
    Execute the operation with automatic logging and error handling
    */
-  async execute(): Promise<OperationResult<T>> {
+  async execute(): Promise<OperationResult<T>>
+  {
     // Add ourselves to the operation stack
     BaseOperation.operationStack.push(this);
 
-    try {
+    try
+    {
       // Check if we need to suspend parent's logger before we start
       await this.handleParentLoggerSuspension();
 
@@ -131,11 +150,14 @@ export abstract class BaseOperation<T> implements Operation<T> {
       const result = await this.performOperation();
 
       // Log the outcome
-      if (result.success) {
+      if (result.success)
+      {
         this.logger.debug(
           `Operation ${this.operationId}: ${this.name} completed successfully`,
         );
-      } else {
+      }
+      else
+      {
         this.logger.error(
           `Operation ${this.operationId}: ${this.name} failed`,
           undefined,
@@ -150,20 +172,23 @@ export abstract class BaseOperation<T> implements Operation<T> {
       this.logger.debug(`Operation ${this.operationId}: ${formattedResult}`);
 
       // Only finalize if we created our own logger (not using parent's)
-      if (this._logger && !this._usingParentLogger) {
+      if (this._logger && !this._usingParentLogger)
+      {
         await this._logger.finalize();
       }
 
       return result;
-    } catch (error: unknown) {
+    }
+    catch (error: unknown)
+    {
       // Handle any unexpected errors that weren't caught by performOperation
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
+      const errorMessage = error instanceof Error ? error.message : String(error);
 
-      this.logger.error("Unexpected error in operation", error);
+      this.logger.error('Unexpected error in operation', error);
 
       // Only finalize if we created our own logger
-      if (this._logger && !this._usingParentLogger) {
+      if (this._logger && !this._usingParentLogger)
+      {
         await this._logger.finalize();
       }
 
@@ -172,7 +197,9 @@ export abstract class BaseOperation<T> implements Operation<T> {
         error: errorMessage,
         details: error,
       };
-    } finally {
+    }
+    finally
+    {
       // Resume parent's logger if we suspended it (MUST do this before popping stack)
       this.handleParentLoggerResumption();
 
@@ -184,7 +211,8 @@ export abstract class BaseOperation<T> implements Operation<T> {
   /**
    Handle suspension of parent's logger if needed
    */
-  private async handleParentLoggerSuspension(): Promise<void> {
+  private async handleParentLoggerSuspension(): Promise<void>
+  {
     const parent = BaseOperation.parent;
 
     // Only suspend if:
@@ -193,11 +221,12 @@ export abstract class BaseOperation<T> implements Operation<T> {
     // 3. Parent has an active logger
     // 4. Parent owns its logger (not using grandparent's)
     if (
-      parent &&
-      !this.shouldUseParentLogger() &&
-      parent._logger &&
-      !parent._usingParentLogger
-    ) {
+      parent
+      && !this.shouldUseParentLogger()
+      && parent._logger
+      && !parent._usingParentLogger
+    )
+    {
       // Suspend parent's logger
       this._suspensionMetadata = await parent._logger.suspend();
       this._parentLoggerSuspended = true;
@@ -208,15 +237,18 @@ export abstract class BaseOperation<T> implements Operation<T> {
   /**
    Resume parent's logger if we suspended it
    */
-  private handleParentLoggerResumption(): void {
-    if (this._parentLoggerSuspended && this._suspensionMetadata) {
+  private handleParentLoggerResumption(): void
+  {
+    if (this._parentLoggerSuspended && this._suspensionMetadata)
+    {
       const parent = BaseOperation.parent;
-      if (parent) {
+      if (parent)
+      {
         // Resume parent's logger with a new part
         parent._logger = Logger.resumeFrom(this._suspensionMetadata);
 
         // Log that we're resuming
-        parent._logger.info("[RESUMING AFTER CHILD OPERATION]");
+        parent._logger.info('[RESUMING AFTER CHILD OPERATION]');
       }
     }
   }
@@ -226,8 +258,10 @@ export abstract class BaseOperation<T> implements Operation<T> {
 
    This is needed for operations that call Deno.exit() to ensure logs are written to disk
    */
-  protected async finalizeOwnLogger(): Promise<void> {
-    if (this._logger && !this._usingParentLogger) {
+  protected async finalizeOwnLogger(): Promise<void>
+  {
+    if (this._logger && !this._usingParentLogger)
+    {
       await this._logger.finalize();
     }
   }

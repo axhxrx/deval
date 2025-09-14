@@ -1,15 +1,8 @@
 import { formatDateForFilenameSuffix, writeNewFile, WriteNewOptions } from '@axhxrx/write-new-file';
 import { ensureDir } from '@std/fs';
 import { join } from '@std/path';
-import {
-  LOG_LEVELS,
-  type LogContext,
-  type LogEntry,
-  type LogLevel,
-  MULTI_LOG_LEVEL_MAP,
-  MULTI_LOG_LEVELS,
-  type MultiLogLevel,
-} from '../types/logger.ts';
+import { LOG_LEVELS, type LogContext, type LogEntry, type LogLevel, MULTI_LOG_LEVEL_MAP, MULTI_LOG_LEVELS,
+  type MultiLogLevel } from '../types/logger.ts';
 import { formatConsoleOutput, formatFileContent, formatSubLoggerLine, generateLogFilename } from './formatter.ts';
 import { SubLoggerManager } from './SubLoggerManager.ts';
 

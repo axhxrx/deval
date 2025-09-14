@@ -1,58 +1,67 @@
 import '@std/dotenv/load';
+import { displayHelp, parseCliArgs } from './cli/parser.ts';
+import type { BenchOptions, CompareOptions } from './cli/types.ts';
 import { Logger } from './logger/logger.ts';
-import type { BaseOperation } from './operations/base/BaseOperation.ts';
-import { isOperation } from './operations/base/isOperation.ts';
+import { BenchOperation } from './operations/ui/BenchOperation.ts';
+import { CompareOperation } from './operations/ui/CompareOperation.ts';
 import { MainMenuOperation } from './operations/ui/MainMenuOperation.ts';
+import { OperationRunner } from './runtime/OperationRunner.ts';
+import { initUserInputQueue } from './runtime/UserInputQueue.ts';
 
 /**
- Execute a chain of operations recursively
-
- Operations can return other operations, creating a chain.
- The chain continues until an operation returns null or non-operation data.
-
- Operations are responsible for their own UI and error handling.
- This function only handles catastrophic failures.
- */
-async function executeOperationChain(operation: BaseOperation<unknown>): Promise<void>
-{
-  try
-  {
-    const result = await operation.execute();
-
-    // Only continue chain if we got another operation
-    if (result.success && result.data && isOperation(result.data))
-    {
-      await executeOperationChain(result.data);
-    }
-    // Otherwise done - operation handled everything internally
-  }
-  catch (error: unknown)
-  {
-    // Catastrophic failure - log and show error
-    await Logger.error('FATAL: Operation crashed', error);
-    console.error('Operation crashed', [
-      error instanceof Error ? error.message : 'Unknown error',
-      'The operation could not complete due to an unexpected error.',
-    ]);
-  }
-}
-
-/**
- Main application entry point
- */
+Main application entry point
+*/
 async function main(): Promise<void>
 {
   // Initialize Logger as the very first thing
   await Logger.initialize();
 
-  // Add this back later:
-  // const initResult = await AppInitOperation.execute();
+  // Parse command line arguments
+  const args = parseCliArgs(Deno.args);
 
-  // if (!initResult.success)
-  // {
-  //   await Logger.error('Failed to initialize app', initResult.error);
-  //   Deno.exit(1);
-  // }
+  // Handle help flag
+  if (args.help)
+  {
+    displayHelp();
+    Deno.exit(0);
+  }
+
+  // Initialize user input queue if simulated inputs provided
+  if (args.inputs)
+  {
+    initUserInputQueue(args.inputs);
+    await Logger.info(`Initialized with simulated inputs: ${args.inputs}`);
+  }
+
+  // Handle direct command execution
+  if (args.command)
+  {
+    let operation;
+
+    switch (args.command)
+    {
+      case 'bench':
+        operation = new BenchOperation(args.options as BenchOptions);
+        break;
+      case 'compare':
+        operation = new CompareOperation(args.options as CompareOptions);
+        break;
+    }
+
+    if (operation)
+    {
+      await OperationRunner.executeChain(operation);
+      Deno.exit(0);
+    }
+  }
+
+  // No command specified, show interactive menu
+  console.log(`
+╔════════════════════════════════════════╗
+║          deval - Dev Evaluator         ║
+║   Environment Benchmarking Tool v0.0.1 ║
+╚════════════════════════════════════════╝
+  `);
 
   // Main menu loop
   while (true)
@@ -64,10 +73,7 @@ async function main(): Promise<void>
     {
       // Catastrophic menu failure - this should basically never happen
       await Logger.error('FATAL: Menu operation failed', menuResult.error);
-      await displayErrorBanner('Menu system error', [
-        menuResult.error,
-        'The menu system encountered an unexpected error.',
-      ]);
+      console.error('Menu system error:', menuResult.error);
       continue; // Try to show menu again
     }
 
@@ -78,7 +84,7 @@ async function main(): Promise<void>
     }
 
     // Execute the operation chain
-    await executeOperationChain(menuResult.data);
+    await OperationRunner.executeChain(menuResult.data);
     // Loop back to show menu again
   }
 }
@@ -93,13 +99,7 @@ if (import.meta.main)
   {
     const errorMessage = error instanceof Error ? error.message : `Unknown error: ${error}`;
     await Logger.error('Fatal error', error);
-    await displayErrorBanner('Fatal error occurred', [errorMessage]);
-
-    await SessionRecorder.getInstance().stopRecording({
-      completedSuccessfully: false,
-      errorOccurred: true,
-      error: errorMessage,
-    });
+    console.error('Fatal error occurred:', errorMessage);
     Deno.exit(1);
   }
 }

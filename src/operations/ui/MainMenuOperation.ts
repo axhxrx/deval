@@ -1,7 +1,9 @@
 import { assertNever } from '@axhxrx/assert-never';
-import { promptSelect } from '@std/cli/unstable-prompt-select';
+import { promptSelect } from '../../runtime/prompt.ts';
 import { MenuOperation } from '../base/MenuOperation.ts';
 import type { OperationResult } from '../base/types.ts';
+import { BenchOperation } from './BenchOperation.ts';
+import { CompareOperation } from './CompareOperation.ts';
 import { DisplayFatalErrorAndExit } from './DisplayFatalErrorAndExit.ts';
 import { ExitNormally } from './ExitNormally.ts';
 
@@ -9,6 +11,8 @@ import { ExitNormally } from './ExitNormally.ts';
 // I tried making a menu on object, but I realized that there is a need to sometimes know the chosen item, and then some other stufff, before constructing the result operation. But we could handle that by standarding the context passed back to the function maybe, instead of making the menu definition an array of titles, and then a handler function that is exhaustive (and causes more type fuckery and workarounds), Maybe we design this soon but not yet, for now this works:
 //
 const menu = [
+  '🚀 Run benchmarks',
+  '📊 Compare results',
   '💣 Display fatal error and exit',
   '👋 Just exit normally',
 ] as const;
@@ -22,6 +26,10 @@ const handleMenuSelection = (label: MenuItem) =>
 {
   switch (label)
   {
+    case '🚀 Run benchmarks':
+      return new BenchOperation();
+    case '📊 Compare results':
+      return new CompareOperation();
     case '💣 Display fatal error and exit':
       return new DisplayFatalErrorAndExit('You have chosen to display a fatal error and exit.');
     case '👋 Just exit normally':
@@ -48,12 +56,6 @@ export class MainMenuOperation extends MenuOperation<MainMenuOperationResult>
   protected async performOperation(): Promise<OperationResult<MainMenuOperationResult>>
   {
     await Promise.resolve();
-
-    console.log(`
-      MAIN MENU
-
-
-    `);
 
     const chosen = promptSelect(
       'MAIN MENU',
