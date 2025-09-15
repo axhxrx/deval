@@ -43,7 +43,7 @@ export class ShowInfoOperation extends UIOperation<void>
       // Wait for acknowledgment
       await unifiedPrompt<boolean>({
         message: 'Press Enter to continue...',
-        inputType: UserInputType.Confirm,
+        inputType: 'confirm',
         interactive: () =>
         {
           // Just wait for Enter key

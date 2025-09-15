@@ -7,23 +7,33 @@ These types are not specific to deval and can be extracted to a library
 /**
 Types of user input actions for simulated sessions
 */
-export enum UserInputType
-{
-  Select = 'select',
-  Input = 'input',
-  Toggle = 'toggle',
-  Confirm = 'confirm',
-  Checkbox = 'checkbox',
-}
+export type UserInputType = 'select' | 'input' | 'toggle' | 'confirm';
 
 /**
 A single user input action
 */
-export interface UserInput
+export interface BaseSimulatedUserInput<T extends UserInputType, ValueT>
 {
-  type: UserInputType;
-  value: string | number | boolean | string[];
+  type: T;
+  value: ValueT;
 }
+
+export type SimulatedSelect = BaseSimulatedUserInput<'select', number>;
+
+export type SimulatedInput = BaseSimulatedUserInput<'input', string>;
+
+export type SimulatedToggle = BaseSimulatedUserInput<'toggle', boolean>;
+
+export type SimulatedConfirm = BaseSimulatedUserInput<'confirm', 'yes' | 'no' | 'help'>;
+
+export type SimulatedUserInput = SimulatedSelect | SimulatedInput | SimulatedToggle | SimulatedConfirm;
+
+export type SimulatedUserInputTypeMap = {
+  select: SimulatedSelect;
+  input: SimulatedInput;
+  toggle: SimulatedToggle;
+  confirm: SimulatedConfirm;
+};
 
 /**
 Metadata for a recorded session

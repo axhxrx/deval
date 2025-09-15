@@ -16,7 +16,7 @@ export function promptSelect<T extends string>(
 
   if (queue)
   {
-    const input = queue.getNext(UserInputType.Select);
+    const input = queue.getNext('select');
     if (input && typeof input.value === 'number')
     {
       const index = input.value;

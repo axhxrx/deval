@@ -28,7 +28,7 @@ export class InputPasswordOperation extends UIOperation<string | null>
     {
       const password = await unifiedPrompt<string>({
         message: this.message,
-        inputType: UserInputType.Input,
+        inputType: 'confirm',
         interactive: () =>
         {
           // In real implementation, we'd use a masked input
@@ -58,7 +58,7 @@ export class InputPasswordOperation extends UIOperation<string | null>
       {
         const confirmation = await unifiedPrompt<string>({
           message: 'Confirm password',
-          inputType: UserInputType.Input,
+          inputType: 'confirm',
           interactive: () =>
           {
             const input = prompt('Confirm password: ');

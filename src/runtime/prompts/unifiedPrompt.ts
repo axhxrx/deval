@@ -1,5 +1,5 @@
 import { Logger } from '../../logger/logger.ts';
-import { UserInputType } from '../types.ts';
+import type { UserInputType } from '../types.ts';
 import { getUserInputQueue } from '../UserInputQueue.ts';
 
 /**
@@ -37,6 +37,8 @@ export interface PromptOptions<T>
 Unified prompt handler that checks UserInputQueue first
 
 This centralizes all prompt handling and enables simulated inputs for testing and automation. Higher-level operations don't need to know about the input queue.
+
+@deprecated We will phase out this unifiedPrompt in favor of more kinds of "interactive" UI operations directly checking the queue. (@mason 2025-09-14)
 */
 export async function unifiedPrompt<T>(options: PromptOptions<T>): Promise<T>
 {

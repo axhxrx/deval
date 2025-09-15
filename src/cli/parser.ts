@@ -2,9 +2,9 @@ import { parseArgs } from '@std/cli/parse-args';
 import type { BenchOptions, CompareOptions, ParsedArgs } from './types.ts';
 
 /**
-Parse command line arguments
+Parse command line arguments. You can pass them if you want, but the process args will be used by default, which covers the normal case.
 */
-export function parseCliArgs(args: string[]): ParsedArgs
+export function parseCliArgs(args: string[] = Deno.args): ParsedArgs
 {
   // First, check if there's a command
   const [command, ...rest] = args;

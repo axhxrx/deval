@@ -62,7 +62,7 @@ export class ConfirmOperation extends UIOperation<boolean>
 
         const value = await unifiedPrompt<string | boolean>({
           message: this.message,
-          inputType: UserInputType.Confirm,
+          inputType: 'confirm',
           interactive: async () =>
           {
             // Lazy load the prompt library to avoid signal handler leaks in tests

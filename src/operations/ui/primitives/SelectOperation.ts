@@ -29,7 +29,7 @@ export class SelectOperation<T extends string> extends UIOperation<T | null>
     {
       const value = await unifiedPrompt<T>({
         message: this.message,
-        inputType: UserInputType.Select,
+        inputType: 'select',
         interactive: async () =>
         {
           // Lazy load the prompt library to avoid signal handler leaks in tests

@@ -17,7 +17,7 @@ async function main(): Promise<void>
   await Logger.initialize();
 
   // Parse command line arguments
-  const args = parseCliArgs(Deno.args);
+  const args = parseCliArgs();
 
   // Handle help flag
   if (args.help)

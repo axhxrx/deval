@@ -1,6 +1,11 @@
+import { assertNever } from '@axhxrx/assert-never';
+import { parseCliArgs } from '../cli/parser.ts';
 import { Logger } from '../logger/logger.ts';
-import type { UserInput } from './types.ts';
-import { UserInputType } from './types.ts';
+import type {
+  SimulatedUserInput,
+  SimulatedUserInputTypeMap,
+  UserInputType,
+} from './types.ts';
 
 /**
 Queue for managing simulated user inputs
@@ -9,8 +14,9 @@ Allows CLI tools to be driven programmatically for testing and automation
 */
 export class UserInputQueue
 {
-  private queue: UserInput[] = [];
-  private originalQueue: UserInput[] = [];
+  private queue: SimulatedUserInput[] = [];
+  private used: SimulatedUserInput[] = [];
+  private originalQueue: SimulatedUserInput[] = [];
   private interactionCount = 0;
 
   constructor(inputString?: string)
@@ -28,9 +34,9 @@ export class UserInputQueue
 
   Format: "select:3,input:'text with spaces',toggle:yes,select:7"
   */
-  private parseInputString(input: string): UserInput[]
+  private parseInputString(input: string): SimulatedUserInput[]
   {
-    const actions: UserInput[] = [];
+    const actions: SimulatedUserInput[] = [];
     const parts: string[] = [];
 
     // Parse respecting quoted strings
@@ -91,7 +97,7 @@ export class UserInputQueue
           const num = parseInt(valueStr, 10);
           if (!isNaN(num))
           {
-            actions.push({ type: UserInputType.Select, value: num });
+            actions.push({ type: 'select', value: num });
           }
           break;
         }
@@ -106,7 +112,7 @@ export class UserInputQueue
           {
             value = value.slice(1, -1);
           }
-          actions.push({ type: UserInputType.Input, value });
+          actions.push({ type: 'input', value });
           break;
         }
         case 'toggle':
@@ -114,38 +120,25 @@ export class UserInputQueue
           const value = valueStr.toLowerCase() === 'yes'
             || valueStr.toLowerCase() === 'true'
             || valueStr.toLowerCase() === 'on';
-          actions.push({ type: UserInputType.Toggle, value });
+          actions.push({ type: 'toggle', value });
           break;
         }
         case 'confirm':
         {
           // Pass the string value through - let the operation handle parsing
           // This allows for "yes", "no", "more_info", etc.
-          actions.push({ type: UserInputType.Confirm, value: valueStr });
-          break;
-        }
-        case 'checkbox':
-        {
-          // Parse array format: checkbox:['option1','option2']
-          if (valueStr.startsWith('[') && valueStr.endsWith(']'))
+          if (valueStr === 'yes' || valueStr === 'no' || valueStr === 'help')
           {
-            const arrayContent = valueStr.slice(1, -1);
-            const values = arrayContent.split(',').map((v) =>
-            {
-              let trimmed = v.trim();
-              if (
-                (trimmed.startsWith('"') && trimmed.endsWith('"'))
-                || (trimmed.startsWith("'") && trimmed.endsWith("'"))
-              )
-              {
-                trimmed = trimmed.slice(1, -1);
-              }
-              return trimmed;
-            });
-            actions.push({ type: UserInputType.Checkbox, value: values });
+            actions.push({ type: 'confirm', value: valueStr });
+          }
+          else
+          {
+            throw new Error(`UserInputQueue: Invalid confirm value: ${valueStr}`);
           }
           break;
         }
+        default:
+          throw new Error(`UserInputQueue: Invalid input type: ${type}`);
       }
     }
 
@@ -153,20 +146,29 @@ export class UserInputQueue
   }
 
   /**
-  Get next input of specific type
+  Get next input of specific type,
+
+  @throws Error if type is not the type of the next simulated input — that indicates the simulated input value is incorrect, so its a fatal error.
   */
-  getNext(type: UserInputType): UserInput | undefined
+
+  getNext<T extends UserInputType>(type: T): SimulatedUserInputTypeMap[T] | null
   {
+    const queued = this.queue.shift();
+    if (!queued)
+    {
+      return null;
+    }
+
+    this.used.push(queued);
+
     this.interactionCount++;
 
-    const index = this.queue.findIndex((input) => input.type === type);
-    if (index !== -1)
+    if (queued.type !== type)
     {
-      const input = this.queue.splice(index, 1)[0];
-      Logger.info(`[SIMULATED INPUT] ${type} = ${JSON.stringify(input.value)}`);
-      return input;
+      throw new Error(`Expected ${type} input, but got ${queued.type}`);
     }
-    return undefined;
+
+    return queued as SimulatedUserInputTypeMap[T];
   }
 
   /**
@@ -184,20 +186,20 @@ export class UserInputQueue
   {
     return this.originalQueue.map((input) =>
     {
-      switch (input.type)
+      const type = input.type;
+      switch (type)
       {
-        case UserInputType.Select:
+        case 'select':
           return `select option ${input.value}`;
-        case UserInputType.Input:
+        case 'input':
           return `input '${input.value}'`;
-        case UserInputType.Toggle:
+        case 'toggle':
           return `toggle ${input.value ? 'yes' : 'no'}`;
-        case UserInputType.Confirm:
+        case 'confirm':
           return `confirm ${input.value ? 'yes' : 'no'}`;
-        case UserInputType.Checkbox:
-          return `checkbox [${Array.isArray(input.value) ? input.value.join(', ') : input.value}]`;
         default:
-          return `${input.type} ${input.value}`;
+          assertNever(type);
+          throw new Error(`Unexpected type: ${type}`);
       }
     }).join(', ');
   }
@@ -219,9 +221,34 @@ export function initUserInputQueue(inputString?: string): void
 }
 
 /**
-Get the global user input queue
+Get the global user input queue. This will create the queue if it doesn't exist, using the program arguments. (This is so that operations run as standalone programs can be tested with simulated input.
+
+#deprecated — remove this and just use getNextSimulatedInput() in operations
 */
 export function getUserInputQueue(): UserInputQueue | undefined
 {
+  if (!globalQueue)
+  {
+    const args = parseCliArgs();
+    initUserInputQueue(args.inputs);
+  }
   return globalQueue;
+}
+
+/**
+ Returns the next simulated user input, or null if none exists. Note this throws if the next simulated user input does exist, but is a different type — that implies your simulated input is FUBAR.
+ */
+export function getNextSimulatedInput<T extends UserInputType>(type: T)
+{
+  if (!globalQueue)
+  {
+    const args = parseCliArgs();
+    initUserInputQueue(args.inputs);
+  }
+  if (!globalQueue?.hasMore())
+  {
+    return null;
+  }
+  const result = globalQueue.getNext(type);
+  return result;
 }

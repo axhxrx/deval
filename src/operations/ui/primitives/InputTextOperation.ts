@@ -1,5 +1,4 @@
-import { unifiedPrompt } from '../../../runtime/prompts/unifiedPrompt.ts';
-import { UserInputType } from '../../../runtime/types.ts';
+import { getNextSimulatedInput } from '../../../runtime/UserInputQueue.ts';
 import type { OperationResult } from '../../base/types.ts';
 import { UIOperation } from '../../base/UIOperation.ts';
 
@@ -40,51 +39,43 @@ export class InputTextOperation extends UIOperation<string | null>
   {
     try
     {
-      const value = await unifiedPrompt<string>({
-        message: this.message,
-        inputType: UserInputType.Input,
-        interactive: () =>
-        {
-          // In real implementation, we'd use a proper input prompt
-          // For now, using basic prompt
-          const input = prompt(
-            this.defaultValue
-              ? `${this.message} (default: ${this.defaultValue}): `
-              : `${this.message}: `,
-          );
+      const message = this.defaultValue
+        ? `${this.message} (default: ${this.defaultValue}): `
+        : `${this.message}: `;
 
-          if (input === null)
-          {
-            // User cancelled
-            return null as any;
-          }
+      console.log(message);
 
-          // Use default if empty input
-          const result = input || this.defaultValue || '';
+      const simulatedInput = getNextSimulatedInput('input');
 
-          // Validate
-          const validationError = this.validate(result);
-          if (validationError)
-          {
-            console.error(`❌ ${validationError}`);
-            // In real app, we'd retry - for now just return null
-            return null as any;
-          }
+      let enteredValue: string | null;
 
-          return result;
-        },
-      });
+      if (simulatedInput)
+      {
+        // Simulated input - print it as if typed
+        enteredValue = simulatedInput.value;
+        console.log(`> ${enteredValue}`);
+      }
+      else
+      {
+        // Interactive input
+        enteredValue = prompt('>');
+      }
 
-      // Validate the value (even from queue)
+      const value = this.defaultValue
+        ? enteredValue || this.defaultValue
+        : enteredValue;
+
+      // Only validate if value is not null — null means the user cancelled the input
       if (value !== null)
       {
+        // Validate the value (even from queue)
         const validationError = this.validate(value);
         if (validationError)
         {
-          return {
-            success: false,
-            error: validationError,
-          };
+          // If we have a validation error, inform the user and re-run the operation recursively.
+          console.warn(validationError);
+          const result = await this.performOperation();
+          return result;
         }
       }
 
@@ -99,11 +90,16 @@ export class InputTextOperation extends UIOperation<string | null>
     }
   }
 
-  private validate(value: string): string | null
+  private validate(value: unknown)
   {
     if (!this.validation)
     {
       return null;
+    }
+
+    if (typeof value !== 'string')
+    {
+      return `Invalid input type (got ${typeof value} (${value}), but string is required)`;
     }
 
     const v = this.validation;
