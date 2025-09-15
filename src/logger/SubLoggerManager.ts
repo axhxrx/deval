@@ -1,3 +1,16 @@
+type SubLoggerManagerInitOptions = {
+  /**
+   I think it is a bug in Deno, but even if we call Deno.removeSignalListener(), tests fail because of:
+   ```text
+   error: Leaks detected:
+     - A signal listener was created during the test, but not fired/cleared during the test. Clear the signal listener by calling `Deno.removeSignalListener`.
+  ```
+
+  Therefore this option can be used in a before block to ensure that signal handlers are not registered during tests.
+   */
+  suppressSignalHandlers?: boolean;
+};
+
 /**
  SubLoggerManager handles cleanup of active sub-loggers on process termination
 
@@ -10,30 +23,36 @@ export class SubLoggerManager
   >();
   private static initialized = false;
 
+  static sigintHandler = async () =>
+  {
+    await this.finalizeAll('SIGINT');
+  };
+
+  static sigtermHandler = async () =>
+  {
+    await this.finalizeAll('SIGTERM');
+  };
+
   /**
    Initialize signal handlers and error handlers
    */
-  static initialize(): void
+  static initialize(options: SubLoggerManagerInitOptions = {}): void
   {
     if (this.initialized) return;
 
     // Register signal handlers
-    try
+    if (!options.suppressSignalHandlers)
     {
-      Deno.addSignalListener('SIGINT', () =>
+      try
       {
-        void this.finalizeAll('SIGINT');
-      });
-
-      Deno.addSignalListener('SIGTERM', () =>
+        Deno.addSignalListener('SIGINT', this.sigintHandler);
+        Deno.addSignalListener('SIGTERM', this.sigtermHandler);
+      }
+      catch (error: unknown)
       {
-        void this.finalizeAll('SIGTERM');
-      });
-    }
-    catch (error: unknown)
-    {
-      // Signal handlers might not be available in all environments
-      console.warn('Failed to register signal handlers:', error);
+        // Signal handlers might not be available in all environments
+        console.warn('Failed to register signal handlers:', error);
+      }
     }
 
     // Register unhandled rejection handler
@@ -89,9 +108,20 @@ export class SubLoggerManager
     }
 
     // Exit after cleanup for signals
-    if (reason === 'SIGINT' || reason === 'SIGTERM')
+    if (reason === 'SIGINT' || reason === 'SIGTERM' || reason === 'TEST')
     {
-      Deno.exit(0);
+      this.removeSignalHandlers();
+      if (reason !== 'TEST')
+      {
+        Deno.exit(0);
+      }
+      console.log('REMOVED HANDLER');
     }
+  }
+
+  static removeSignalHandlers()
+  {
+    Deno.removeSignalListener('SIGINT', this.sigintHandler);
+    Deno.removeSignalListener('SIGTERM', this.sigtermHandler);
   }
 }

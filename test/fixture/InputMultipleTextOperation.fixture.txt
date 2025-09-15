@@ -1,0 +1,43 @@
+
+📝 Example Multi-Field Form
+═══════════════════════════
+
+What is your name? (default: Anonymous): 
+> Bert
+
+Entered so far:
+  name: Bert
+
+What is your email address?: 
+> me@me.me
+
+Entered so far:
+  name: Bert
+  email: me@me.me
+
+How old are you?: 
+> 666
+
+Entered so far:
+  name: Bert
+  email: me@me.me
+  age: 666
+
+Where are you located? (default: Earth): 
+> Your mom
+
+✅ All fields collected:
+  name: Bert
+  email: me@me.me
+  age: 666
+  location: Your mom
+
+FINAL RESULT: {
+  "success": true,
+  "data": {
+    "name": "Bert",
+    "email": "me@me.me",
+    "age": "666",
+    "location": "Your mom"
+  }
+}
