@@ -97,3 +97,17 @@ export class SelectOperation<T extends string> extends UIOperation<T | null>
     }
   }
 }
+
+// Make it runnable as a standalone program
+if (import.meta.main)
+{
+  const colors = ['Red', 'Green', 'Blue', 'Yellow'] as const;
+  const example = new SelectOperation(
+    'What is your favorite color?',
+    colors,
+    true,
+  );
+
+  const result = await example.execute();
+  console.log('\nRESULT:', result);
+}

@@ -107,3 +107,25 @@ export class ShowInfoOperation extends UIOperation<void>
     console.log('╚' + '═'.repeat(boxWidth) + '╝');
   }
 }
+
+// Make it runnable as a standalone program
+if (import.meta.main)
+{
+  const example = new ShowInfoOperation(
+    '📚 Example Information',
+    [
+      'This is a demonstration of ShowInfoOperation.',
+      '',
+      'Key features:',
+      '• Displays information to the user',
+      '• Waits for acknowledgment',
+      '• Can be boxed for emphasis',
+      '',
+      'Press Enter to continue...',
+    ],
+    true, // Use boxed display
+  );
+
+  const result = await example.execute();
+  console.log('\nRESULT:', result);
+}

@@ -1,9 +1,10 @@
+import { assertNever } from '@axhxrx/assert-never';
 import { MenuOperation } from '../base/MenuOperation.ts';
 import type { OperationResult } from '../base/types.ts';
-import { BenchOperation } from './BenchOperation.ts';
 import { CompareOperation } from './CompareOperation.ts';
 import { DisplayFatalErrorAndExit } from './DisplayFatalErrorAndExit.ts';
 import { ExitNormally } from './ExitNormally.ts';
+import { BenchmarkOptionsMenuOperation } from './menus/BenchmarkOptionsMenuOperation.ts';
 import { SelectOperation } from './primitives/SelectOperation.ts';
 
 // NOTE: We will want to rework menus to be more self-checking. Maybe a Menu and MenuItem class/type and a handler function type to not make the types require all this shitty boiler plate.
@@ -26,7 +27,7 @@ const handleMenuSelection = (label: MenuItem) =>
   switch (label)
   {
     case '🚀 Run benchmarks':
-      return new BenchOperation();
+      return new BenchmarkOptionsMenuOperation();
     case '📊 Compare results':
       return new CompareOperation();
     case '💣 Display fatal error and exit':

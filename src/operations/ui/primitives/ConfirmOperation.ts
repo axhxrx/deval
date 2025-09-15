@@ -136,3 +136,17 @@ export class ConfirmOperation extends UIOperation<boolean>
     }
   }
 }
+
+// Make it runnable as a standalone program
+if (import.meta.main)
+{
+  const example = new ConfirmOperation(
+    'Do you want to proceed with the operation?',
+    {
+      moreInfo: ['This operation will:', '• Process all files', '• Update the database', '• Cannot be undone'],
+    },
+  );
+
+  const result = await example.execute();
+  console.log('\nRESULT:', result);
+}

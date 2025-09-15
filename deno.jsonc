@@ -5,6 +5,7 @@
   "license": "MIT",
   "imports": {
     "@axhxrx/assert-never": "jsr:@axhxrx/assert-never@^0.2.1",
+    "@axhxrx/cmd": "../cmd/mod.ts",
     "@std/cli": "jsr:@std/cli@^1.0.22",
     "@std/dotenv": "jsr:@std/dotenv@^0.225.5",
     "@std/fs": "jsr:@std/fs@^1.0.19",

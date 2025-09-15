@@ -150,3 +150,18 @@ export class InputTextOperation extends UIOperation<string | null>
     return null;
   }
 }
+
+if (import.meta.main)
+{
+  const example = new InputTextOperation(
+    `Hello!
+
+This is an example of InputTextOperation. Please enter your name, or, if you are not comfortable sharing your real name, please enter somebody else's name.
+
+If you don't know any people, you can accept the default name shown below`,
+    'Bob Marley',
+  );
+
+  const result = await example.execute();
+  console.log('\nRESULT:', result);
+}

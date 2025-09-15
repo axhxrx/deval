@@ -96,3 +96,15 @@ export class InputPasswordOperation extends UIOperation<string | null>
     }
   }
 }
+
+// Make it runnable as a standalone program
+if (import.meta.main)
+{
+  const example = new InputPasswordOperation(
+    'Create a new password',
+    true, // Require confirmation
+  );
+
+  const result = await example.execute();
+  console.log('\nRESULT:', result.success ? { success: true, data: '********' } : result);
+}
