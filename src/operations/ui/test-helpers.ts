@@ -51,6 +51,7 @@ export function normalizeOutput(output: string): string
 {
   return output
     // Remove ANSI color codes
+    // deno-lint-ignore no-control-regex
     .replace(/\x1b\[[0-9;]*m/g, '')
     // Remove timestamps
     .replace(/\[\d{2}:\d{2}:\d{2}\.\d{3}\]/g, '[TIMESTAMP]')

@@ -79,7 +79,7 @@ export class BenchmarkOptionsMenuOperation extends MenuOperation<BenchOperation 
       menuOptions.push('↩️  Go back');
 
       // Show menu
-      const selectOp = new SelectOperation('', menuOptions as any, false);
+      const selectOp = new SelectOperation('', menuOptions as string[], false);
       const result = await selectOp.execute();
 
       if (!result.success || !result.data)
@@ -204,7 +204,7 @@ export class BenchmarkOptionsMenuOperation extends MenuOperation<BenchOperation 
 
     const selectOp = new SelectOperation(
       'Select target to remove',
-      options as any,
+      options as string[],
       true,
     );
 

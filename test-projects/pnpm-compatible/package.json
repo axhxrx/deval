@@ -1,0 +1,17 @@
+{
+  "name": "pnpm-compatible",
+  "version": "1.0.0",
+  "description": "Simple project compatible with pnpm",
+  "main": "index.js",
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "build": "echo 'Building project...' && node build.js",
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.202"
+  }
+}

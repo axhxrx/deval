@@ -2,7 +2,6 @@ import { assertEquals } from '@std/assert';
 import { SubLoggerManager } from '../../../logger/SubLoggerManager.ts';
 import { initUserInputQueue } from '../../../runtime/UserInputQueue.ts';
 import { captureOutput, normalizeOutput, readFixture } from '../test-helpers.ts';
-import type { MultipleTextResult } from './InputMultipleTextOperation.ts';
 import { InputMultipleTextOperation } from './InputMultipleTextOperation.ts';
 
 Deno.test('InputMultipleTextOperation with all fields', async () =>

@@ -22,6 +22,7 @@ export class ShowInfoOperation extends UIOperation<void>
     super(`Show info: ${title}`);
   }
 
+  // deno-lint-ignore require-await
   protected async performOperation(): Promise<OperationResult<void>>
   {
     try

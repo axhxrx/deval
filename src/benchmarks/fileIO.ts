@@ -51,7 +51,7 @@ export class FileIOBenchmark implements Benchmark
       const duration = endTime - startTime;
 
       // Check if all writes succeeded
-      const allSucceeded = results.every((r: any) => r.success);
+      const allSucceeded = results.every((r) => (r as { success: boolean }).success);
 
       if (!allSucceeded)
       {

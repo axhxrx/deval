@@ -1,5 +1,4 @@
 import { promptSelect as stdPromptSelect } from '@std/cli/unstable-prompt-select';
-import { UserInputType } from './types.ts';
 import { getUserInputQueue } from './UserInputQueue.ts';
 
 /**
@@ -10,7 +9,7 @@ This allows simulated inputs to drive the CLI
 export function promptSelect<T extends string>(
   message: string,
   options: T[],
-): T
+): T | null
 {
   const queue = getUserInputQueue();
 
@@ -31,5 +30,5 @@ export function promptSelect<T extends string>(
   }
 
   // Fall back to actual prompt
-  return stdPromptSelect(message, options);
+  return stdPromptSelect(message, options) as T | null;
 }
