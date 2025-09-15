@@ -1,5 +1,4 @@
-import { unifiedPrompt } from '../../../runtime/prompts/unifiedPrompt.ts';
-import { UserInputType } from '../../../runtime/types.ts';
+import { getNextSimulatedInput } from '../../../runtime/UserInputQueue.ts';
 import type { OperationResult } from '../../base/types.ts';
 import { UIOperation } from '../../base/UIOperation.ts';
 
@@ -27,60 +26,49 @@ export class SelectOperation<T extends string> extends UIOperation<T | null>
   {
     try
     {
-      const value = await unifiedPrompt<T>({
-        message: this.message,
-        inputType: 'select',
-        interactive: async () =>
-        {
-          // Lazy load the prompt library to avoid signal handler leaks in tests
-          const { promptSelect: stdPromptSelect } = await import('@std/cli/unstable-prompt-select');
+      console.log(this.message);
 
-          // Convert readonly array to mutable for std prompt
-          const mutableOptions = [...this.options];
+      const simulatedInput = getNextSimulatedInput('select');
 
-          if (this.allowCancel)
-          {
-            // Add cancel option at the end
-            mutableOptions.push('❌ Cancel' as T);
-          }
-
-          const selected = stdPromptSelect(this.message, mutableOptions);
-
-          // Check if cancel was selected
-          if (this.allowCancel && selected === '❌ Cancel')
-          {
-            return null as any;
-          }
-
-          return selected;
-        },
-        formatValue: (value) =>
-        {
-          // For select, the value is the index, need to get actual option
-          if (typeof value === 'number')
-          {
-            return this.options[value] || 'Invalid selection';
-          }
-          return String(value);
-        },
-      });
-
-      // Special handling for index-based selection from queue
-      if (typeof value === 'number')
+      if (simulatedInput)
       {
-        const index = value as number;
+        // Simulated selection - use index to get option
+        const index = simulatedInput.value;
         if (index >= 0 && index < this.options.length)
         {
           const selected = this.options[index];
-          console.log(`${this.message}`);
-          console.log(`> ${selected} (simulated)`);
+          console.log(`> ${selected}`);
           return { success: true, data: selected };
         }
         // Invalid index means cancellation
+        console.log('> (cancelled)');
         return { success: true, data: null };
       }
+      else
+      {
+        // Interactive mode
+        // Lazy load the prompt library to avoid signal handler leaks in tests
+        const { promptSelect: stdPromptSelect } = await import('@std/cli/unstable-prompt-select');
 
-      return { success: true, data: value };
+        // Convert readonly array to mutable for std prompt
+        const mutableOptions = [...this.options];
+
+        if (this.allowCancel)
+        {
+          // Add cancel option at the end
+          mutableOptions.push('❌ Cancel' as T);
+        }
+
+        const selected = stdPromptSelect('', mutableOptions);
+
+        // Check if cancel was selected
+        if (this.allowCancel && selected === '❌ Cancel')
+        {
+          return { success: true, data: null };
+        }
+
+        return { success: true, data: selected as T };
+      }
     }
     catch (error: unknown)
     {

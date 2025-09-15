@@ -1,5 +1,4 @@
-import { unifiedPrompt } from '../../../runtime/prompts/unifiedPrompt.ts';
-import { UserInputType } from '../../../runtime/types.ts';
+import { getNextSimulatedInput } from '../../../runtime/UserInputQueue.ts';
 import type { OperationResult } from '../../base/types.ts';
 import { UIOperation } from '../../base/UIOperation.ts';
 
@@ -37,20 +36,21 @@ export class ShowInfoOperation extends UIOperation<void>
         this.displaySimple();
       }
 
-      // Display prompt message before waiting
-      console.log('\nPress Enter to continue...');
-
       // Wait for acknowledgment
-      await unifiedPrompt<boolean>({
-        message: 'Press Enter to continue...',
-        inputType: 'confirm',
-        interactive: () =>
-        {
-          // Just wait for Enter key
-          prompt('');
-          return true;
-        },
-      });
+      const simulatedInput = getNextSimulatedInput('confirm');
+
+      if (simulatedInput)
+      {
+        // Simulated - just acknowledge
+        console.log('\nPress Enter to continue...');
+        console.log('> (acknowledged)');
+      }
+      else
+      {
+        // Interactive - wait for Enter
+        console.log('\nPress Enter to continue...');
+        prompt('');
+      }
 
       return { success: true, data: undefined };
     }

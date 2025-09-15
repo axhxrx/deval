@@ -1,5 +1,4 @@
-import { unifiedPrompt } from '../../../runtime/prompts/unifiedPrompt.ts';
-import { UserInputType } from '../../../runtime/types.ts';
+import { getNextSimulatedInput } from '../../../runtime/UserInputQueue.ts';
 import type { OperationResult } from '../../base/types.ts';
 import { UIOperation } from '../../base/UIOperation.ts';
 import { ShowInfoOperation } from './ShowInfoOperation.ts';
@@ -60,45 +59,45 @@ export class ConfirmOperation extends UIOperation<boolean>
           options.reverse();
         }
 
-        const value = await unifiedPrompt<string | boolean>({
-          message: this.message,
-          inputType: 'confirm',
-          interactive: async () =>
-          {
-            // Lazy load the prompt library to avoid signal handler leaks in tests
-            const { promptSelect: stdPromptSelect } = await import('@std/cli/unstable-prompt-select');
+        let value: string;
+        const simulatedInput = getNextSimulatedInput('confirm');
 
-            const selected = stdPromptSelect(this.message, options);
+        if (simulatedInput)
+        {
+          // Simulated input
+          value = simulatedInput.value;
+          const displayMap: Record<string, string> = {
+            yes: '✅ Yes',
+            no: '❌ No',
+            help: 'ℹ️  More info',
+          };
+          console.log(this.message);
+          console.log(`> ${displayMap[value] || value}`);
+        }
+        else
+        {
+          // Interactive mode
+          // Lazy load the prompt library to avoid signal handler leaks in tests
+          const { promptSelect: stdPromptSelect } = await import('@std/cli/unstable-prompt-select');
 
-            if (selected?.includes('Yes')) return 'yes';
-            if (selected?.includes('No')) return 'no';
-            if (selected?.includes('More info')) return 'more_info';
-            return 'no'; // Default fallback
-          },
-        });
+          const selected = stdPromptSelect(this.message, options);
+
+          if (selected?.includes('Yes')) value = 'yes';
+          else if (selected?.includes('No')) value = 'no';
+          else if (selected?.includes('More info')) value = 'help';
+          else value = 'no'; // Default fallback
+        }
 
         // Parse the response
         let response: 'yes' | 'no' | 'more_info';
 
-        if (typeof value === 'boolean')
+        if (value === 'yes')
         {
-          response = value ? 'yes' : 'no';
+          response = 'yes';
         }
-        else if (typeof value === 'string')
+        else if (value === 'help')
         {
-          const lower = String(value).toLowerCase();
-          if (lower === 'yes' || lower === 'y' || lower === 'true')
-          {
-            response = 'yes';
-          }
-          else if (lower === 'more' || lower === 'info' || lower === 'more_info')
-          {
-            response = 'more_info';
-          }
-          else
-          {
-            response = 'no';
-          }
+          response = 'more_info';
         }
         else
         {

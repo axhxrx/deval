@@ -1,0 +1,17 @@
+╔═════════════════════════════════════════════════╗
+║             📚 Example Information              ║
+╟─────────────────────────────────────────────────╢
+║ This is a demonstration of ShowInfoOperation.   ║
+║                                                 ║
+║ Key features:                                   ║
+║ • Displays information to the user              ║
+║ • Waits for acknowledgment                      ║
+║ • Can be boxed for emphasis                     ║
+║                                                 ║
+║ Press Enter to continue...                      ║
+╚═════════════════════════════════════════════════╝
+
+Press Enter to continue...
+> (acknowledged)
+
+RESULT: {"success":true}

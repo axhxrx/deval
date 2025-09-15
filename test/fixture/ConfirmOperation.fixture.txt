@@ -1,0 +1,16 @@
+Do you want to proceed with the operation?
+> ℹ️  More info
+
+Additional Information
+======================
+This operation will:
+• Process all files
+• Update the database
+• Cannot be undone
+
+Press Enter to continue...
+> (acknowledged)
+Do you want to proceed with the operation?
+> ✅ Yes
+
+RESULT: {"success":true,"data":true}

@@ -40,8 +40,8 @@ export class InputTextOperation extends UIOperation<string | null>
     try
     {
       const message = this.defaultValue
-        ? `${this.message} (default: ${this.defaultValue}): `
-        : `${this.message}: `;
+        ? `${this.message} (default: ${this.defaultValue}):`
+        : `${this.message}:`;
 
       console.log(message);
 

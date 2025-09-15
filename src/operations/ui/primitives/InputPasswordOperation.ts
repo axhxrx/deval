@@ -1,5 +1,4 @@
-import { unifiedPrompt } from '../../../runtime/prompts/unifiedPrompt.ts';
-import { UserInputType } from '../../../runtime/types.ts';
+import { getNextSimulatedInput } from '../../../runtime/UserInputQueue.ts';
 import type { OperationResult } from '../../base/types.ts';
 import { UIOperation } from '../../base/UIOperation.ts';
 
@@ -26,63 +25,66 @@ export class InputPasswordOperation extends UIOperation<string | null>
   {
     try
     {
-      const password = await unifiedPrompt<string>({
-        message: this.message,
-        inputType: 'confirm',
-        interactive: () =>
-        {
-          // In real implementation, we'd use a masked input
-          // For now, using basic prompt with warning
-          console.log('⚠️  Warning: Password will be visible (proper masking not implemented yet)');
-          const input = prompt(`${this.message}: `);
+      console.log(`${this.message}:`);
 
-          if (input === null)
-          {
-            // User cancelled
-            return null as any;
-          }
+      let password: string | null;
+      const simulatedInput = getNextSimulatedInput('input');
 
-          return input;
-        },
-        // Never show password values in logs
-        formatValue: () => '********',
-      });
+      if (simulatedInput)
+      {
+        // Simulated input - show masked
+        password = simulatedInput.value;
+        console.log('> ********');
+      }
+      else
+      {
+        // Interactive input
+        console.log('⚠️  Warning: Password will be visible (proper masking not implemented yet)');
+        password = prompt('>');
+      }
 
       if (password === null)
       {
         return { success: true, data: null };
       }
 
-      // If confirmation required
-      if (this.confirmPassword)
-      {
-        const confirmation = await unifiedPrompt<string>({
-          message: 'Confirm password',
-          inputType: 'confirm',
-          interactive: () =>
-          {
-            const input = prompt('Confirm password: ');
-            return input || '';
-          },
-          formatValue: () => '********',
-        });
-
-        if (confirmation !== password)
-        {
-          return {
-            success: false,
-            error: 'Passwords do not match',
-          };
-        }
-      }
-
       // Basic validation - minimum length
       if (password.length < 6)
       {
-        return {
-          success: false,
-          error: 'Password must be at least 6 characters',
-        };
+        console.warn('Password must be at least 6 characters');
+        // Recurse to try again
+        return await this.performOperation();
+      }
+
+      // If confirmation required
+      if (this.confirmPassword)
+      {
+        console.log('Confirm password:');
+
+        let confirmation: string | null;
+        const confirmSimulated = getNextSimulatedInput('input');
+
+        if (confirmSimulated)
+        {
+          confirmation = confirmSimulated.value;
+          console.log('> ********');
+        }
+        else
+        {
+          confirmation = prompt('>');
+        }
+
+        if (confirmation === null)
+        {
+          return { success: true, data: null };
+        }
+
+        if (confirmation !== password)
+        {
+          console.warn('Passwords do not match');
+          // Recurse to try again
+          return await this.performOperation();
+        }
       }
 
       return { success: true, data: password };
