@@ -65,7 +65,7 @@ export class FileIOBenchmark implements Benchmark
         quiet: true,
       });
 
-      // Calculate operations per second
+      // Calculate Ops per second
       const opsPerSecond = (iterations / duration) * 1000;
 
       return {

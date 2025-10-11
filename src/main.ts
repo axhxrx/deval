@@ -2,10 +2,10 @@ import '@std/dotenv/load';
 import { displayHelp, parseCliArgs } from './cli/parser.ts';
 import type { BenchOptions, CompareOptions } from './cli/types.ts';
 import { Logger } from './logger/logger.ts';
-import { BenchOperation } from './operations/ui/BenchOperation.ts';
-import { CompareOperation } from './operations/ui/CompareOperation.ts';
-import { MainMenuOperation } from './operations/ui/MainMenuOperation.ts';
-import { OperationRunner } from './runtime/OperationRunner.ts';
+import { BenchOp } from './ops/ui/BenchOp.ts';
+import { CompareOp } from './ops/ui/CompareOp.ts';
+import { MainMenuOp } from './ops/ui/MainMenuOp.ts';
+import { OpStack } from './runtime/OpStack.ts';
 import { initUserInputQueue } from './runtime/UserInputQueue.ts';
 
 /**
@@ -36,21 +36,21 @@ async function main(): Promise<void>
   // Handle direct command execution
   if (args.command)
   {
-    let operation;
+    let Op;
 
     switch (args.command)
     {
       case 'bench':
-        operation = new BenchOperation(args.options as BenchOptions);
+        Op = new BenchOp(args.options as BenchOptions);
         break;
       case 'compare':
-        operation = new CompareOperation(args.options as CompareOptions);
+        Op = new CompareOp(args.options as CompareOptions);
         break;
     }
 
-    if (operation)
+    if (Op)
     {
-      await OperationRunner.executeChain(operation);
+      await OpStack.run(Op);
       Deno.exit(0);
     }
   }
@@ -66,13 +66,13 @@ async function main(): Promise<void>
   // Main menu loop
   while (true)
   {
-    const menuOp = new MainMenuOperation();
-    const menuResult = await menuOp.execute();
+    const menuOp = new MainMenuOp();
+    const menuResult = await menuOp.run();
 
     if (!menuResult.success)
     {
       // Catastrophic menu failure - this should basically never happen
-      await Logger.error('FATAL: Menu operation failed', menuResult.error);
+      await Logger.error('FATAL: Menu Op failed', menuResult.error);
       console.error('Menu system error:', menuResult.error);
       continue; // Try to show menu again
     }
@@ -83,8 +83,8 @@ async function main(): Promise<void>
       break;
     }
 
-    // Execute the operation chain
-    await OperationRunner.executeChain(menuResult.data);
+    // Run the Op chain
+    await OpStack.run(menuResult.data);
     // Loop back to show menu again
   }
 }

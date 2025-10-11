@@ -69,7 +69,7 @@ export interface BenchmarkResult
   duration: number;
 
   /**
-  Operations per second (if applicable)
+  Ops per second (if applicable)
   */
   opsPerSecond?: number;
 
@@ -141,7 +141,7 @@ export interface BenchmarkReport
 }
 
 /**
-Command descriptor for benchmark operations
+Command descriptor for benchmark Ops
 */
 export interface BenchmarkCommand
 {
@@ -151,7 +151,7 @@ export interface BenchmarkCommand
   name: string;
 
   /**
-  Command to execute
+  Command to run
   */
   cmd: string;
 

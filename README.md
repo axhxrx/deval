@@ -10,9 +10,9 @@ Developer environment evaluation and benchmarking tool.
 
 ## Benchmarks
 
-- File I/O operations (many small files)
+- File I/O Ops (many small files)
 - Compilation performance (Deno, Bun, tsc, Rust)
-- Package manager operations (pnpm install, npm ci)
+- Package manager Ops (pnpm install, npm ci)
 - Real-world build scenarios
 
 ## Features

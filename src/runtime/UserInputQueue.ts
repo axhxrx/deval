@@ -125,7 +125,7 @@ export class UserInputQueue
         }
         case 'confirm':
         {
-          // Pass the string value through - let the operation handle parsing
+          // Pass the string value through - let the Op handle parsing
           // This allows for "yes", "no", "more_info", etc.
           if (valueStr === 'yes' || valueStr === 'no' || valueStr === 'help')
           {
@@ -221,9 +221,9 @@ export function initUserInputQueue(inputString?: string): void
 }
 
 /**
-Get the global user input queue. This will create the queue if it doesn't exist, using the program arguments. (This is so that operations run as standalone programs can be tested with simulated input.
+Get the global user input queue. This will create the queue if it doesn't exist, using the program arguments. (This is so that Ops run as standalone programs can be tested with simulated input.
 
-#deprecated — remove this and just use getNextSimulatedInput() in operations
+#deprecated — remove this and just use getNextSimulatedInput() in Ops
 */
 export function getUserInputQueue(): UserInputQueue | undefined
 {

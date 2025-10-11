@@ -1,17 +1,17 @@
 #!/usr/bin/env -S deno run -A
 
 /**
-E2E test for benchmark operations with simulated inputs
+E2E test for benchmark Ops with simulated inputs
 */
 
 import { assertEquals, assertExists } from '@std/assert';
 
 // Simulated input sequence for running benchmarks
 const simulatedInputs = [
-  '1', // Select "bench" operation
+  '1', // Select "bench" Op
   '1', // Select "NPM Install" benchmark
   'Test run from E2E', // Comment
-  'n', // Don't run another operation
+  'n', // Don't run another Op
 ];
 
 console.log('Running E2E benchmark test...');

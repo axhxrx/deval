@@ -11,7 +11,7 @@ import { SubLoggerManager } from './SubLoggerManager.ts';
  */
 export interface LoggerSuspensionMetadata
 {
-  operationName: string;
+  OpName: string;
   partNumber: number;
 }
 
@@ -29,7 +29,7 @@ export class Logger
   private static sessionTimestamp: string | null = null;
 
   // Instance properties for sub-logging
-  private operationName?: string;
+  private OpName?: string;
   private logs: LogEntry[] = [];
   private startTime?: Date;
   private finalized = false;
@@ -39,11 +39,11 @@ export class Logger
   /**
    Constructor for sub-logger mode
 
-   @param operationName - Name of the operation for the log filename
+   @param OpName - Name of the Op for the log filename
    */
-  constructor(operationName: string)
+  constructor(OpName: string)
   {
-    this.operationName = operationName;
+    this.OpName = OpName;
     this.startTime = new Date();
     this.logs = [];
     this.isSubLogger = true;
@@ -461,7 +461,7 @@ export class Logger
     await this.finalize();
 
     return {
-      operationName: this.operationName!,
+      OpName: this.OpName!,
       partNumber: this.partNumber,
     };
   }
@@ -471,7 +471,7 @@ export class Logger
    */
   static resumeFrom(metadata: LoggerSuspensionMetadata): Logger
   {
-    const logger = new Logger(metadata.operationName);
+    const logger = new Logger(metadata.OpName);
     logger.partNumber = metadata.partNumber + 1;
     return logger;
   }
@@ -492,7 +492,7 @@ export class Logger
     const firstEntry = this.logs[0];
     const filename = generateLogFilename({
       ...firstEntry,
-      message: this.operationName!, // Use operation name instead of message
+      message: this.OpName!, // Use Op name instead of message
     }, this.partNumber);
 
     // Add continuation header if this is not the first part

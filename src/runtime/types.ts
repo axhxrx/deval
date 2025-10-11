@@ -1,5 +1,5 @@
 /**
-Generic runtime types for operation-based CLI applications
+Generic runtime types for Op-based CLI applications
 
 These types are not specific to deval and can be extracted to a library
 */
@@ -55,7 +55,7 @@ export interface SessionInteraction
   type: UserInputType;
   value: unknown;
   timestamp: number;
-  operation?: string;
+  Op?: string;
 }
 
 /**

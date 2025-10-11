@@ -1,45 +1,45 @@
 #!/usr/bin/env -S deno run -A
 
 /**
-Test all benchmark operations individually
+Test all benchmark Ops individually
 */
 
-import { BuildAPIClientBenchmarkOperation } from '../src/operations/benchmarks/BuildAPIClientBenchmarkOperation.ts';
-import { BuildReactAppBenchmarkOperation } from '../src/operations/benchmarks/BuildReactAppBenchmarkOperation.ts';
-import { DockerComposeBenchmarkOperation } from '../src/operations/benchmarks/DockerComposeBenchmarkOperation.ts';
-import { NPMInstallBenchmarkOperation } from '../src/operations/benchmarks/NPMInstallBenchmarkOperation.ts';
-import { NPMRemoveNodeModulesBenchmarkOperation } from '../src/operations/benchmarks/NPMRemoveNodeModulesBenchmarkOperation.ts';
-import { PNPMInstallBenchmarkOperation } from '../src/operations/benchmarks/PNPMInstallBenchmarkOperation.ts';
+import { BuildAPIClientBenchmarkOp } from '../src/ops/benchmarks/BuildAPIClientBenchmarkOp.ts';
+import { BuildReactAppBenchmarkOp } from '../src/ops/benchmarks/BuildReactAppBenchmarkOp.ts';
+import { DockerComposeBenchmarkOp } from '../src/ops/benchmarks/DockerComposeBenchmarkOp.ts';
+import { NPMInstallBenchmarkOp } from '../src/ops/benchmarks/NPMInstallBenchmarkOp.ts';
+import { NPMRemoveNodeModulesBenchmarkOp } from '../src/ops/benchmarks/NPMRemoveNodeModulesBenchmarkOp.ts';
+import { PNPMInstallBenchmarkOp } from '../src/ops/benchmarks/PNPMInstallBenchmarkOp.ts';
 
 const benchmarks = [
   {
     name: 'NPM Install',
-    operation: new NPMInstallBenchmarkOperation({ quick: true }),
+    Op: new NPMInstallBenchmarkOp({ quick: true }),
   },
   {
     name: 'NPM Remove node_modules',
-    operation: new NPMRemoveNodeModulesBenchmarkOperation({ quick: true }),
+    Op: new NPMRemoveNodeModulesBenchmarkOp({ quick: true }),
   },
   {
     name: 'Build React App',
-    operation: new BuildReactAppBenchmarkOperation({ quick: true }),
+    Op: new BuildReactAppBenchmarkOp({ quick: true }),
   },
   {
     name: 'Build API Client',
-    operation: new BuildAPIClientBenchmarkOperation({ quick: true }),
+    Op: new BuildAPIClientBenchmarkOp({ quick: true }),
   },
   {
     name: 'PNPM Install',
-    operation: new PNPMInstallBenchmarkOperation({ quick: true }),
+    Op: new PNPMInstallBenchmarkOp({ quick: true }),
   },
   {
     name: 'Docker Compose',
-    operation: new DockerComposeBenchmarkOperation({ quick: true }),
+    Op: new DockerComposeBenchmarkOp({ quick: true }),
     skipIfNoDocker: true,
   },
 ];
 
-console.log('🧪 Testing all benchmark operations individually...\n');
+console.log('🧪 Testing all benchmark Ops individually...\n');
 
 const results = [];
 
@@ -74,7 +74,7 @@ for (const benchmark of benchmarks)
 
   try
   {
-    const result = await benchmark.operation.execute();
+    const result = await benchmark.Op.run();
 
     if (result.success)
     {

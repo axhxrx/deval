@@ -116,9 +116,9 @@ export class BenchmarkReportWriter
       {
         details.push(`${result.metadata.iterations} iterations`);
       }
-      if (result.metadata.commandsExecuted && result.metadata.totalCommands)
+      if (result.metadata.commandsRun && result.metadata.totalCommands)
       {
-        details.push(`${result.metadata.commandsExecuted}/${result.metadata.totalCommands} commands`);
+        details.push(`${result.metadata.commandsRun}/${result.metadata.totalCommands} commands`);
       }
       if (result.metadata.failedCommand)
       {

@@ -1,16 +1,16 @@
-Do you want to proceed with the operation?
+Do you want to proceed with the Op?
 > ℹ️  More info
 
 Additional Information
 ======================
-This operation will:
+This Op will:
 • Process all files
 • Update the database
 • Cannot be undone
 
 Press Enter to continue...
 > (acknowledged)
-Do you want to proceed with the operation?
+Do you want to proceed with the Op?
 > ✅ Yes
 
 RESULT: {"success":true,"data":true}

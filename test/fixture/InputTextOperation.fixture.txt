@@ -1,6 +1,6 @@
 Hello!
 
-This is an example of InputTextOperation. Please enter your name, or, if you are not comfortable sharing your real name, please enter somebody else's name.
+This is an example of InputTextOp. Please enter your name, or, if you are not comfortable sharing your real name, please enter somebody else's name.
 
 If you don't know any people, you can accept the default name shown below (default: Bob Marley):
 > Alice Wonderland

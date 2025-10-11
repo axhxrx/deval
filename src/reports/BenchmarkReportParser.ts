@@ -134,7 +134,7 @@ export class BenchmarkReportParser
             const cmdMatch = details.match(/(\d+)\/(\d+) commands/);
             if (cmdMatch)
             {
-              metadata.commandsExecuted = parseInt(cmdMatch[1]);
+              metadata.commandsRun = parseInt(cmdMatch[1]);
               metadata.totalCommands = parseInt(cmdMatch[2]);
             }
           }
