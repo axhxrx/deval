@@ -21,7 +21,7 @@ export function formatOutcomeForLogging(
   }
   else
   {
-    return `❌ { success: false, error: ${result.error}, details: ${result.details} }`;
+    return `🙅🏻‍♀️ { success: false, error: ${result.error}, details: ${result.details} }`;
   }
 }
 
